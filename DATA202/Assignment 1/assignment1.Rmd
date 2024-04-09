@@ -1,0 +1,335 @@
+---
+title: "Assignment 1"
+author: "Junn Pham, 300538618"
+date: "2023-03-22"
+  output:
+  html_document: default
+  word_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Question 1**
+
+a.  Air temperature
+
+-   Data type: numerical, Continuous
+-   R class: numeric
+-   R type: double
+
+b.  Length of time spent looking for work
+
+-   Data type: numerical, continuous
+-   R class: numeric
+-   R type: double
+
+c.  Success in winning an election
+
+-   Data type: logical, boolean
+-   R class: logical
+-   R type: logical
+
+d.  Response to the question How often do you avoid news stories about climate change? (scale 1-6, 1=never, 2=rarely, ..., 6=always)
+
+-   Data type: categorical, ordered
+-   R class: character
+-   R type: character
+
+e.  Number of attempts at a goal before scoring
+
+-   Data type: numerical, integer
+-   R class: numeric
+-   R type: integer
+
+**Question 2**
+
+a.  
+
+```{r}
+a <- c(3,4,1)
+a
+z <- array(c(-1,1,7,0,6,1), dim = c(3,2))
+z
+```
+
+b.  
+
+```{r}
+#The maximum value of a
+max(a)
+```
+
+c.  
+
+```{r}
+d <- array(c(a,a), dim = c(3,2))
+d
+```
+
+d.  
+
+```{r}
+#The elements of a that are larger than the corresponding elements of the second column of z
+ida <- a>z[,2] 
+a2 <- a[ida]
+a2
+```
+
+e.  
+
+```{r}
+#The sum of the product of z and d
+sum(z*d)
+```
+
+f.  
+
+```{r}
+#The product of a and z
+a*z
+#The product of d and z
+d*z
+```
+
+The product of a and z is the same as the product of d and z because: a is a three-element vector while z is a 3x2 matrix. when multiplying a and z, R makes a copy of a to match the number of elements of z (3x2= 6 elements). Therefore, The product of a and z is produced by multiplying the three-value of z[,1] with three-element of vector a and multiply three-value of z[,2] with three-element of vector a. It produces similar product with the product of d and z, as d is made by two copies of the vector a.
+
+**Question 3**
+
+a.  
+
+```{r}
+convert.temperature <- function(x, from="F") {
+  if (!is.numeric(x)){
+    stop("Temperature must be numeric")
+  }
+  if (from!="C" & from!="F") {
+    stop("Invalid input specification")
+  }
+  if (from=="F") {
+    return((x - 32)*(5/9))
+  }  else {
+    return((x*(9/5)) + 32)
+  }
+}
+```
+
+b.  
+
+```{r}
+convert.temperature(20)
+convert.temperature(20, from="C")
+```
+
+c.  
+
+```{r}
+convert.temperature(c(0:100), from="C")
+```
+
+d.  
+
+```{r}
+convert.temperature(-273.15, from="C")
+```
+
+e.  
+
+```{r}
+convert.temperature <- function(x, from="F") {
+  if (!is.numeric(x)){
+    stop("Temperature must be numeric")
+  } else if (from!="C" & from!="F") {
+    stop("Invalid input specification")
+  }
+  
+  result <- c()
+  n <- length(x)
+  
+  if (from=="F") {
+    for (i in 1:n) {
+      result[i] <- (x[i] - 32)*(5/9)
+      if (result[i] < -273.15) result[i] <- NA
+    }
+  }  else {
+    for (i in 1:n) {
+      if (x[i] < -273.15) result[i] <- NA
+        else result[i] <- (x[i]*(9/5)) + 32
+    }
+  }
+      if (any(is.na(result))) {
+        warning("The temperature must not be below -273.15 Celcius ")
+      }
+      return(result)
+}
+```
+
+f.  
+
+```{r}
+convert.temperature(c(100,0,-100,-200,-300), from="C")
+```
+
+**Question 4**
+
+a.  
+
+```{r}
+star <- read.csv("starsearch.csv", skip = 2, header = TRUE)
+```
+
+b.  
+
+```{r}
+nrow(star) #The number of rows of star
+ncol(star) #The number of columns of star
+```
+
+d.  
+
+```{r}
+star$Month <- as.Date(paste(star$Month, "01", sep="-"), format = "%Y-%m-%d")
+```
+
+e.  
+
+```{r}
+plot(star$Month, star$star.wars...Worldwide., type="l", xlab = "Time", ylab = 'Number of "star wars" searches', main = 'Line graph of the “star wars” searches over time')
+```
+
+f.  
+
+```{r}
+maxvalue <- function(n,x,y) {
+  max.search <- 0
+  m<- ""
+  for (i in 1:nrow(star)) {
+    if ((format(star$Month[i],"%Y") >= x) & (format(star$Month[i],"%Y") <= y)) {
+      if (max.search < star$star.wars...Worldwide.[i]) {
+        max.search <- star$star.wars...Worldwide.[i]
+        m <- star$Month[i]
+      }
+    }
+  }
+  paste0("peak ",n,": (month = ",m,", number of searches = ", max.search, ")" )
+}
+```
+
+The line graph shows that there are two major peaks. The number of "star wars" searches reached the first major peak before 2010. Then, that number reached another peak after approximate ten years from the previous peak:
+
+```{r}
+maxvalue(1,"2004","2010")
+maxvalue(2,"2010","2023")
+```
+
+g.  
+
+```{r}
+#The months where there were more ‘star trek’ searches than ‘star wars’ searches
+star$Month[star$star.trek...Worldwide.>star$star.wars...Worldwide.]
+```
+
+**Question 5**
+
+Let vector x = (1,2,3) and vector y = (-4,2,8)
+
+```{r}
+x <- c(1,2,3)
+y <- c(-4,2,8)
+```
+
+* x=y : Operator "=" assigns vector y to vector x. The result is that the value of vector x is the same as that of vector y
+```{r}
+x=y
+x
+y
+```
+
+* x==y : Operator "==" is an element by element comparison between two vectors x and y. x[1] is compared with y[1], x[2] with y[2], and x[3] with y[3]. If the compared elements are equal, the result is TRUE, vice versa.
+```{r echo=FALSE}
+x <- c(1,2,3)
+y <- c(-4,2,8)
+```
+```{r}
+x==y
+```
+
+* x<-y : In this case, operator "<-" has the same function as the operator "=", which assigns vector y to vector x. In general, The operator "<-" can be used anywhere, whereas the operator "=" is only allowed at the top level or as one of the subexpressions in a braced list of expressions.
+```{r}
+x<-y
+x
+y
+```
+
+* x<(-y) : Operator "<" is an element by element comparison between two vectors x and y.If x[i] < (-y[i]) (with i from 1 to 3) , the result is TRUE, vice versa.
+
+```{r echo=FALSE}
+x <- c(1,2,3)
+y <- c(-4,2,8)
+```
+```{r}
+x<(-y)
+```
+
+**Question 6**
+
+a.  
+
+```{r}
+library(MASS)
+hist(survey$Height, xlab = "Student heights", main = "Histogram of Student Heights")
+```
+
+b.  
+
+```{r}
+boxplot(split(survey$Height, survey$Fold), xlab = "The different ways the students fold their arms", ylab = "Student heights", main = "Boxplots of heights vs. the different ways the students fold their arms", col = "dark red")
+```
+
+c.  
+
+```{r}
+plot(survey$Height, survey$Pulse, xlab = "Student heights", ylab = "Pulse rate of student", main = "Scatterplot of pulse rate against student height")
+```
+
+d.  
+
+```{r}
+survey$Exer <- factor(survey$Exer, levels = c("Freq","Some","None"),labels = c("No exercise","Some exercise","Frequent exercise"))
+survey$Smoke <- factor(survey$Smoke, levels = c("Heavy","Regul","Occas","Never"), labels = c("Heavy","Regular","Occasional","Never"))
+
+barplot(table(survey$Smoke, survey$Exer), beside=TRUE,
+        xlab="Exercise frequency", ylab="Number of students", main = "Barplots of the counts of people categorised by\n how much they exercise and whether they smoke\n", ylim=c(0,100), col=grey.colors(4))
+legend("topright", legend=levels(survey$Smoke), title = "Smoking frequency", fill=grey.colors(4))
+```
+
+**Question 7**
+
+a.  
+
+```{r}
+#ChatGPT initial release
+ChatGPT.init <- ISOdate(2022,11,30)
+  
+#Day of the week when ChatGPT was first released
+weekdays(ChatGPT.init)
+```
+
+b.  
+
+```{r}
+#Date and time when the Titanic set sail from Southampton (UK time zone) 
+Titanic.SetSail.UK <- "10-04-1912 12:00:00" #“Europe/London” time zone
+
+#Diffence between the two time zones (hour)
+dif <- round(as.numeric(as.POSIXct(Titanic.SetSail.UK, tz="US/Eastern") - as.POSIXct(Titanic.SetSail.UK, tz = "Europe/London")))
+
+#Diffence between the two time zones (second)
+dif <- dif*60*60
+
+#Date and time when the Titanic set sail from Southampton (US time zone)
+as.POSIXct(Titanic.SetSail.UK, format = "%d-%m-%Y %H:%M:%S", tz = "US/Eastern") + dif
+
+```

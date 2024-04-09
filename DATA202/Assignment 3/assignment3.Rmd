@@ -1,0 +1,329 @@
+---
+title: "Assignment 3"
+author: "Junn Pham, 300538618"
+date: "2023-05-25"
+output: html_document
+---
+
+## Due: Friday, 26 May 2023 at 6:00 PM NZST, Worth 10%
+
+* Submit the assignment using the ECS submission system.
+* Submit **only** the file `assignment3.Rmd`.
+* Make sure the file knits correctly to a .html file.  You will need to fix your errors and resubmit if it does not create a .html file.
+* **Check your output.**  Open the .html file and make sure it contains your answers as you expect to see them.
+* The log file contains information about any errors that occurred: check it, too.
+* You can resubmit as many times as you like up to the assessment deadline.
+* Make sure your name and student ID number are at the top of your file, that your `R` code is in executable chunks, and any comments are included as text.
+* Also please note the **Student Honour Code**, which you agree to when you submit:
+
+> When submitting my work I confirm:
+>
+> * I have completed all steps of the attached assessment on my own,
+> * I have not used any unauthorised materials while completing this assessment, and
+> * I have not given anyone else access to my assessment. 
+
+Also note:
+
+* Show all `R` code in your file.
+* Show all output where requested to do so.
+* Do **NOT** use any libraries other than those you are instructed to use: they may not be on the submission server, and your code will not work.
+* Do **NOT** install any packages in your code: when you submit your file it does not have privileges to install anything, and your code will fail.
+* Make sure your code works by assuming all external data files it needs or writes to are in the same directory as the .Rmd file. So therefore do not refer to data files using an explicit directory path: refer to them only by their names.
+
+#### Assignment Questions   
+
+```{r include = FALSE}
+marks <- 0
+qnum <- 0
+```
+
+```{r include = FALSE}
+qmarks <- 22
+qnum <- qnum + 1
+marks <- marks + qmarks
+qstr <- sprintf("Q%d. (%d %s)", qnum, qmarks, ifelse(qmarks == 1, "Mark", "Marks"))
+```
+
+**`r qstr`**
+
+In this question, we will simulate the drawing of random cards from a standard 52-card deck of playing cards.  (See https://en.wikipedia.org/wiki/Standard_52-card_deck if you are unfamiliar with playing cards.)  A standard 52-card deck of playing cards consist of 13 cards (which we will consider as being numbered from 1 to 13, so 11 = jack, 12 = queen, 13 = king) for four suits/types (clubs, diamonds, hearts, spades).
+
+a. **[2 marks]** 
+
+*For a single random draw from the deck, what is the probability of selecting a card that is a club?*
+
+P(club) = 13/52 = 0.25
+
+*What is the probability of selecting a card that is 7 or higher?*
+
+P(7 or higher) = P(7,8,9,10,11,12 or 13) = (7*4)/52 = 0.53846
+
+
+b. **[8 marks]** Write a custom function called `card.draw` to simulate the random drawing of cards **with replacement** from a standard 52-card deck of playing cards.
+
+```{r}
+card.draw <- function(n, seed) {
+  if (!n%%1 == 0 | n<=0){
+    stop("n must be positive integer")
+  } else
+  if (!is.numeric(seed)){
+    stop("seed must be real number")
+  } else
+  set.seed(seed)
+  Suit <- sample(x = c("C", "D", "H", "S"), n, replace = TRUE, prob = rep (1/4,4))
+  Number <- sample(1 : 13, n, replace = TRUE, prob = rep(1 / 13, 13))
+  data.frame(Suit,Number)
+}
+```
+
+ c. **[2 marks]** Show output for your code when it is run for the following function specifications:
+```{r error = TRUE}
+card.draw(n = 3.7, seed = 2) # Q1(c)i.
+card.draw(n = 3, seed = 'a') # Q1(c)ii.
+card.draw(n = c(3, 2), seed = c(1, 2)) # Q1(c)iii.
+card.draw(n = 4, seed = 0.3) # Q1(c)iv.
+```
+      
+d. **[4 marks]** Use your function to simulate 1,000,000 random card draws, and use `ggplot` to produce appropriate graphical displays to show frequencies (*i.e.*, the distribution) of the outcomes of 
+      (i) the four suits
+```{r}
+outcomes <- card.draw(n = 1000000, seed = 0)
+sorting <- data.frame(table(outcomes$Suit)) 
+sorting$rel.freq <- sorting$Freq / 1000000
+barplot(sorting$rel.freq, ylim = c(0, 1), names.arg = c("Clubs", "Diamonds", "Hearts", "Spades"), xlab = "Suits", ylab = "Proportion", main = "Relative Frequencies of Outcomes (Suits)\nFrom 1,000,000 Random Card Draws", col = rep(gray(0.75), 6)) 
+
+
+K <- nrow(sorting)
+# Initialise a matrix in which to store information related to cumulative relative frequencies.
+crf <- matrix(0, nrow = K, ncol = K)
+
+for(i in 1 : K)
+  crf[((K - i) + 1) : K, i] <- sorting$rel.freq[1 : i]
+
+barplot(crf, col = c(rep(gray (0.5), K - 1), 1), space = 0, names.arg = NULL, xlab = "", ylab = "Proportion", main = "Cumulative Relative Frequencies of Outcomes (Suits)\nFrom 1,000,000 Random Card Draws")
+axis(side = 4, at = c(0.125, 0.375, 0.625, 0.875), labels = c("Clubs", "Diamonds", "Hearts", "Spades"), tick = FALSE, line = -2, las = 2)
+```
+
+      (ii) the number outcomes for cards.
+```{r}
+outcomes <- card.draw(n = 1000000, seed = 0)
+sorting <- data.frame(table(outcomes$Number)) 
+sorting$rel.freq <- sorting$Freq / 1000000
+barplot(sorting$rel.freq, ylim = c(0, 1), names.arg = 1:13, xlab = "Numbers", ylab = "Proportion", main = "Relative Frequencies of Outcomes (Numbers)\nFrom 1,000,000 Random Card Draws", col = rep(gray(0.75), 6)) 
+
+K <- nrow(sorting)
+# Initialise a matrix in which to store information related to cumulative relative frequencies.
+crf <- matrix(0, nrow = K, ncol = K)
+
+for(i in 1 : K)
+  crf[((K - i) + 1) : K, i] <- sorting$rel.freq[1 : i]
+
+barplot(crf, col = c(rep(gray (0.5), K - 1), 1), space = 0, names.arg = NULL, xlab = "", ylab = "Proportion", main = "Cumulative Relative Frequencies of Outcomes (Numbers)\nFrom 1,000,000 Random Card Draws")
+axis(side = 4, at = (c(1 : 13)/13)-0.038, labels = 1:13, tick = FALSE, line = -2, las = 2)
+```
+
+e. **[2 marks]** Use your function to simulate 1,000,000 random card draws, and calculate the proportion of the cards drawn that are
+
+*(i) clubs*
+```{r}
+outcomes <- card.draw(n = 1000000, seed = 0)
+sorting <- data.frame(table(outcomes$Suit)) 
+x <- sorting[sorting$Var1=="C",]
+x$Freq/1000000 #The proportion of the cards drawn that are clubs.
+```      
+      
+*(ii) 7 or higher*
+```{r}
+outcomes <- card.draw(n = 1000000, seed = 0)
+sorting <- data.frame(table(outcomes$Number)) 
+x <- sorting[7:13,]
+sum(x$Freq)/1000000 #The proportion of the cards drawn that are 7 or higher.
+```
+
+f. **[4 marks]** Finally, calculate the **exact** expected value and variance for the number outcome for a randomly drawn card from the deck (i.e., treating the card drawn as if it were numeric).  Use a simulation of 1,000,000 random card draws to **estimate** the expected value and variance to verify the exact values you calculated.
+
+```{r}
+# Store the possible values and probabilities for the random variable X.
+x <- 1:13
+px <- c(rep(1/13,13))
+
+# Calculate the exact expected value.
+EX <- sum(px * x)
+EX
+
+# Calculate the exact variance.
+VX <- sum(px * (x - EX)^2)
+VX
+
+# Calculate the estimate expected value.
+outcomes <- card.draw(n = 1000000, seed = 0)
+mean(outcomes$Number)
+
+# Calculate the estimate variance.
+var(outcomes$Number)
+```
+
+```{r include = FALSE}
+qmarks <- 8
+qnum <- qnum + 1
+marks <- marks + qmarks
+qstr <- sprintf("Q%d. (%d %s)", qnum, qmarks, ifelse(qmarks == 1, "Mark", "Marks"))
+```
+
+**`r qstr`**
+
+Recall the Monty Hall Problem.  How does the problem change if Monty Hall does not know which doors the car and goats are located behind? This means that it is possible that Monty could open the door with the car behind it by accident, in which case we will assume that the player neither wins nor loses and the game is replayed.  In this version of the game, is it a better strategy for a contestant to change doors or stick with their initial choice, or does it not make a difference?  Simulate 10,000 plays of the game using each strategy to answer this question.
+
+```{r}
+
+MontyHall <- function() {
+  prizes <- c("car", "goat", "goat")
+  door <- sample(x = prizes, size = 3,  replace = FALSE, prob = rep(1 / 3, times = 3))
+  
+  contestant.door <- sample(x = 1 : 3,  size = 1) #The contestant selects one of the three doors.
+
+  available.doors <- 1 : 3 
+  available.doors <- available.doors[-contestant.door] # Remove from consideration the door that was selected by the contestant.
+  
+  montys.door <- sample(available.doors,  size = 1) # The door Monty will open randomly.  
+  
+  if (door[montys.door]=="car") {
+    return(0)
+  } else
+  if (door[contestant.door] == "car") {
+    return("Keep original choice")  # Keep original choice
+  } else
+  if (door[-c(contestant.door, montys.door)] == "car") {
+    return("Switch doors") # Switch doors
+  } 
+  
+}
+
+N <-10000
+set.seed(0)
+result <- data.frame()
+
+for (a in 1:N) {
+  result <- rbind(result, MontyHall())
+}
+
+names(result) <- "Approach"
+
+win <- data.frame(table(result[result$Approach!=0,]))
+win$rel.Freq <- win$Freq/sum(win$Freq)
+win <- win[-2]
+names(win) <- c("Approach","rel.Freq")
+win
+```
+
+In the new version of the game, we can see the probabilities of the two approaches are almost the same. Therefore, it is not make a difference for the contestant to change doors or stick with their initial choice.
+
+```{r include = FALSE}
+qmarks <- 10
+qnum <- qnum + 1
+marks <- marks + qmarks
+qstr <- sprintf("Q%d. (%d %s)", qnum, qmarks, ifelse(qmarks == 1, "Mark", "Marks"))
+```
+
+**`r qstr`**
+
+Consider the following game of chance introduced by a local casino. A player rolls a standard six-sided die. If the outcome of the roll is a 6, the player loses. If the player rolls any number other than a 6, the player is given up to six additional attempts to roll that number again. The game ends when
+
+* the player rolls the number again,
+* the player rolls a 6, or
+* the player has exhausted the six additional rolls.
+
+The player wins only in the first case and loses in the other two cases (in addition to the initial case where the first roll is a 6).
+
+Write code to simulate 10,000 plays of the game, and estimate the probability that the player wins.
+
+```{r}
+N <- 10000
+set.seed(0)
+wins <- 0
+
+for (i in 1:N) {
+   initial.roll <- sample(1 : 6, size = 1)
+   
+   if(initial.roll != 6) {
+     end <- 0
+     rolls <- 0
+     
+     while(end == 0 & rolls < 6){
+       next.roll <- sample(1 : 6, size = 1)
+       rolls <- rolls + 1
+       
+       if(next.roll == 6) {
+         end <- 1
+       } else 
+       
+       if(next.roll == initial.roll) {
+         end <- 1
+         wins <- wins + 1
+       }
+     }
+     
+   }
+}
+
+wins/N
+```
+
+
+
+```{r include = FALSE}
+qmarks <- 10
+qnum <- qnum + 1
+marks <- marks + qmarks
+qstr <- sprintf("Q%d. (%d %s)", qnum, qmarks, ifelse(qmarks == 1, "Mark", "Marks"))
+```
+
+**`r qstr`**
+
+Consider the following proximity network which contains information on whether the actors Allison, Bob, Cass, Dennis, Elliot, and Francis live close to each other:
+
+* Allison lives close to Francis.
+* Allison lives close to Cass.
+* Bob lives close to Dennis.
+* Elliot lives close to Cass.
+* Elliot lives close to Francis.
+* Francis lives close to Cass.
+
+a. **[2 marks]** Is this an example of a social network or a bipartite network?  Why?
+
+- This is an example of a social network because the nodes, in this case is the six actors, are all of a similar type.
+
+b. **[1 mark]** Is the network directed or undirected?
+
+- The network is undirected.
+
+c. **[4 marks]** Create a `network` object called `proximity.net` which reflects the proximity network and which has the names of the actors appropriately reflected in the `vertex.names` node attribute.  Output the adjacency matrix for this `network` object.
+
+```{r}
+library(network)
+adjacency.matrix <- matrix(c(NA,0,1,0,0,1,
+                              0,NA,0,1,0,0,
+                              1,0,NA,0,1,1,
+                              0,1,0,NA,0,0,
+                              0,0,1,0,NA,1,
+                              1,0,1,0,1,NA), 
+                              nrow = 6, byrow = TRUE, 
+                              dimnames = list(c("Allison", "Bob", "Cass", "Dennis", "Elliot", "Francis"), 
+                                              c("Allison", "Bob", "Cass", "Dennis", "Elliot", "Francis")))
+
+proximity.net <- network(adjacency.matrix, directed = FALSE)
+adjacency.matrix
+```
+
+d. **[1 mark]** Are Bob and Cass adjacent?  Use an appropriate function to determine this.
+```{r}
+is.adjacent(proximity.net, 2, 3)
+```
+
+e. **[2 marks]** Produce a plot of the network with node labels.
+```{r}
+set.seed(0)
+plot(proximity.net, displaylabels = TRUE, vertex.cex = 1.5, main = "Undirected Proximity Network")
+```
+
+**(Assignment total: `r marks` Marks)**
